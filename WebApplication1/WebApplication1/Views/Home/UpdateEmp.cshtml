@@ -1,0 +1,71 @@
+﻿@model EmployeeManagement.ViewModel.EmployeeViewModel
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Update Employee</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+    <div class="container mt-3">
+        <h2>Update Employee</h2>
+        @if (ViewBag.ErrorMessage != null)
+        {
+            <div>
+                @ViewBag.ErrorMessage
+            </div>
+        }
+        <form method="post" enctype="multipart/form-data" asp-controller="Home" asp-action="UpdateEmp" asp-route-id="@Model.Id">
+            <div class="mb-3">
+                <label asp-for="FullName" class="form-label">Full Name:</label>
+                <input type="text" class="form-control" asp-for="FullName">
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Sec_id" class="form-label">Section Name:</label>
+                <select asp-for="Sec_id" class="form-control" asp-items="@(new SelectList(ViewBag.Sections, "Value", "Text", Model.Sec_id))">
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Edu_Id" class="form-label">Education:</label>
+                <select asp-for="Edu_Id" class="form-control" asp-items="@(new SelectList(ViewBag.Educations, "Value", "Text", Model.Edu_Id))">
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label asp-for="Sex" class="form-label">Sex:</label>
+                <select asp-for="Sex" class="form-control">
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                </select>               
+            </div>
+            <div class="mb-3">
+                <label asp-for="Dob" class="form-label">Date of Birth:</label>
+                <input type="date" class="form-control" asp-for="Dob">
+                <span asp-validation-for="Dob"></span>
+            </div>
+            <input type="hidden" asp-for="Id">
+            <input type="hidden" asp-for="CreatedBy" value="sa">
+            <span asp-validation-for="CreatedBy" class="text-danger"></span>
+            <input type="hidden" asp-for="CreatedOn" value="@DateTime.Now.ToString()">
+            <input type="hidden" asp-for="UpdateBy" value="sa">
+            <input type="hidden" asp-for="UpdateOn" value="@DateTime.Now.ToString()">
+            @* <input type="hidden" id="Education" name="Education" value="@ViewBag.Educations">
+            <input type="hidden" id="Section" name="Section" value="@ViewBag.Sections"> *@
+
+            <button type="submit" class="btn btn-primary">Save</button>
+            <a href="@Url.Action("Index", "Home")" class="btn btn-secondary">Cancel</a>
+
+        </form>
+    </div>
+    
+
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
+

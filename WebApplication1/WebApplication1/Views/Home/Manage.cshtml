@@ -1,0 +1,209 @@
+﻿@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Employee List</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom CSS styles */
+        /* You can add your custom CSS styles here */
+    </style>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script type="text/javascript"></script>
+    
+</head>
+<body>
+
+        <div class="container mt-3">
+        <form id="filterForm" asp-action="LoadTable" asp-controller="Home" method="post" onsubmit="return false;">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label for="divisionFilter" class="form-label">Division:</label>
+                    <select id="divisionFilter" name="divisionId" class="form-select">
+                        <option value="">Select division</option>
+                        <!-- Options for divisions -->
+                        @if (ViewBag.Divisions != null)
+                        {
+                            @foreach (var divi in ViewBag.Divisions)
+                            {
+                                <option value="@divi.Divi_Id">@divi.Divi_Name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="departmentFilter" class="form-label">Department:</label>
+                    <select id="departmentFilter" name="departId" class="form-select">
+                        <option value="">Select department</option>
+                        <!-- Options for departments -->
+                        @if (ViewBag.Departments != null)
+                        {
+                            @foreach (var depart in ViewBag.Departments)
+                            {
+                                <option value="@depart.Depa_id">@depart.Depa_name</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label for="sectionFilter" class="form-label">Section:</label>
+                    <select id="sectionFilter" name="secId" class="form-select">
+                        <option value="">Select section</option>
+                        <!-- Options for sections -->
+                        @if (ViewBag.Sections != null)
+                        {
+                            @foreach (var sec in ViewBag.Sections)
+                            {
+                                <option value="@sec.Sec_id">@sec.Sec_name</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="row mt-3">
+                <div class="col-md-12">
+                    <button type="submit" class="btn btn-primary" id="searchButton">Search</button>
+                </div>
+            </div>
+            </form>
+        </div>
+   
+
+    <div><a href="@Url.Action("AddEmployee", "Home")" class="btn btn-success">Add Employee</a></div>
+
+
+    @if (ViewBag.ErrorMessage != null)
+    {
+        <div>
+            @ViewBag.ErrorMessage
+        </div>
+    }
+
+    <h1>Hello, @HttpContextAccessor.HttpContext.Session.GetString("user")</h1>
+
+    <div id="dataTableContainer"> 
+    </div>
+
+
+    <!-- Bootstrap JS (optional) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+    
+</body>
+@* <script type="text/javascript">
+    $(document).ready(function () {
+        var message = '@TempData["Message"]';
+        if (message) {
+            var typeMes = '@TempData["TypeMessage"]';
+            switch (typeMes) {
+                case "success":
+                    alert("Success!");
+                    break;
+                case "error":
+                    alert("Error!");
+                    break;
+            }
+        }
+    })
+</script> *@
+<script>
+    
+    function loadDataTable(pageIndex, pageSize) {
+        var formData = null;
+        if ($('#divisionId').val() !== '' || $('#departId').val() !== '' || $('#secId').val() !== '' || $('#page').val() !== '') {
+            formData = $('#filterForm').serialize();
+            formData += '&PageIndex=' + pageIndex + '&PageSize=' + pageSize;
+        }
+
+        $.ajax({
+            url: '@Url.Action("LoadTable", "Home")',
+            type: 'GET',
+            data: formData,
+            success: function (data) {
+                $('#dataTableContainer').html(data);
+            },
+            error: function (xhr, status, error) {
+                console.error(xhr.responseText);
+            }
+        });
+    }
+
+    function fetchDataAndUpdateDepartments(divisionId) {
+        var tempOption = $('#departmentFilter option[value=""]').detach();
+        $.get('@Url.Action("GetDepartments", "Home")?divisionId=' + divisionId, function (data) {
+            $('#departmentFilter').empty();
+            
+            $('#departmentFilter').append(tempOption);
+            
+            $.each(data, function (index, item) {
+                $('#departmentFilter').append($('<option>', {
+                    value: item.depa_id,
+                    text: item.depa_name
+                }));
+            });
+        });
+    }
+
+        function fetchDataAndUpdateSection(departmentId) {
+        var tempOption = $('#sectionFilter option[value=""]').detach();
+            $.get('@Url.Action("GetSections", "Home")?departmentId=' + departmentId, function (data) {
+                $('#sectionFilter').empty();
+
+                $('#sectionFilter').append(tempOption);
+
+                $.each(data, function (index, item) {
+                    $('#sectionFilter').append($('<option>', {
+                       value: item.sec_id,
+                       text: item.sec_name
+                    }));
+                });
+            });
+
+        }
+
+    $('#divisionFilter').change(function () {
+        var divisionId = $(this).val();
+        fetchDataAndUpdateDepartments(divisionId);
+        // loadTable(); ('divisionId', divisionId);
+    });
+
+    $('#departmentFilter').change(function () {
+        var departmentId = $(this).val();
+        fetchDataAndUpdateSection(departmentId);
+        // loadTable(); ('departmentId', departmentId);
+    });
+
+    // $('#sectionFilter').change(function () {
+    //     var sectionId = $(this).val();
+    //     // loadTable(); ('sectionId', sectionId);
+    // });
+
+    $('#searchButton').click(function () {
+        loadDataTable();
+    });
+
+
+    $(document).on('click', '.indexPage', function () {
+        // alert('A')
+        var indexPage = parseInt($(this).text().trim());
+        loadDataTable(indexPage);
+    });
+
+
+    $(document).ready(function () {  
+        var initialDivisionId = $('#divisionFilter').val();
+        fetchDataAndUpdateDepartments(initialDivisionId);
+        
+        loadDataTable();
+               
+    });
+       
+</script>
+</html>

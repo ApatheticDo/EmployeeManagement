@@ -1,0 +1,71 @@
+﻿@model EmployeeManagement.ViewModel.PaginatedViewModel
+@using PagedList.Mvc
+
+
+<div class="row">
+    <div class="col-md-12">
+        @if (Model.PageSize!= null && Model.PageSize > 0)
+        {
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Full Name</th>
+                        <th>Section name</th>
+                        <th>Education</th>
+                        <th>Sex</th>
+                        <th>Date of Birth</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var emp in Model.Items)
+                    {
+                        <tr>
+                            <td>@emp.Id</td>
+                            <td>@emp.FullName</td>
+                            <td>@emp.Section.Sec_name</td>
+                            <td>@emp.Education.Name</td>
+                            <td>@emp.Sex</td>
+                            <td>@DateTime.Parse(emp.Dob).ToString("dd/MM/yyyy")</td>
+                            <td>
+                                <a href="@Url.Action("EditEmployee", "Home", new { id = emp.Id })" class="btn btn-primary">Update</a>
+                                <form asp-action="DeleteConfirmed" asp-route-id="@emp.Id" method="post" onsubmit="return confirm('Are you sure you want to delete this employee?')">
+                                    <button type="submit" class="btn btn-danger">Delete</button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <p>No employees found.</p>
+        }
+    </div>
+    @{
+        var totalPag = Model.TotalItems / Model.PageSize;
+        if (Model.TotalItems % Model.PageSize != 0)
+        {
+            totalPag += 1;
+        }
+    }
+    <nav aria-label="Page navigation example">
+        <ul class="pagination">
+            <li id="pre" class="page-item"><a class="page-link" href="#">Previous</a></li>
+            @for (var pag = 1; pag <= totalPag; pag++)
+            {
+                <li @* onclick="loadDataTable(@pag,2)" *@ class="page-item indexPage"><a class="page-link" href="#">@pag</a></li>
+            }
+            <li id="next" class="page-item"><a class="page-link" href="#">Next</a></li>
+        </ul>
+    </nav>
+</div>
+<script>
+    $('#pre').click(function (e) {
+        e.preventDefault();
+    });
+    
+</script>
+<script src="Views/Home/Manage.cshtml"></script>
